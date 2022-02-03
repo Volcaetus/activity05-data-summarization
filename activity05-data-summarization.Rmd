@@ -19,14 +19,16 @@ Earning potential and employment prospects are two (important) of these consider
 We read in the same data from Activity 4 below, but notice that this code is now surrounded in parentheses.
 
 ```{r load_data, message=FALSE}
-(college_recent_grads <- read_csv("data/recent-grads.csv"))
+(df <- read_csv("data/recent-grads.csv"))
+
+## why not use readr::
 ```
 
 Compare this code output to the `load_data` chunk in your knitted Activity 4 `.md` report.
 What does enclosing an assignment code (i.e., `object_name <- r_code`) in parentheses do?
 
 **Response**:
-
+small printout vs no printout
 
 ### Data Codebook
 
@@ -79,11 +81,24 @@ There are a number of ways to create a code chunk:
 Below, create a code chunk and name it `median_earnings`.
 Make sure there is an empty line above and below the code chunk.
 
+```{r}
+median_earnings = df %>%
+  select(major,median) %>%
+  filter(median<=36000)
+```
 
 
 In your newly created R code chunk, verify that the median income for all majors was $36,000.
 Using the `college_recent_grads` dataset and functions from `{dplyr}`, verify the *median* summary statistic for the variable median earnings of full-time, year-round workers (`median`).
 Name this numerical summary `median_all_majors`.
+
+```{r}
+median_earnings_allmajors = df %>%
+  
+  summarise('med' = median(median))
+```
+
+
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: If you have any questions, contact your instructor. Otherwise feel free to continue on.
 
@@ -95,6 +110,12 @@ Be careful when you name your output summaries as we are dealing with things tha
 When I and obtaining numerical summaries for variables, I like to include the variable name in my summary name (e.g., `mean_med_earnings = mean(median)`).
 Create a code chunk and name it `summary_earnings`.
 
+
+```{r}
+summary_earnings = df %>%
+  select(employed_fulltime_yearround, median)%>%
+  summarise(total = sum(median), max = max(median), mean = mean(median),std=sd(median),mini=min(median),med=median(median))
+```
 
 
 Provide a discussion on what you believe the distribution of median earnings will look like.
@@ -110,6 +131,15 @@ Using the `college_recent_grads` dataset and functions from `{dplyr}`, obtain si
 *Arrange* this summary table by the median earning.
 Create a code chunk and name it `major_earnings`.
 
+```{r}
+major_earnings_summary = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  arrange(desc(median))%>%
+  summarise(total = sum(median), max = max(median), mean = mean(median),std=sd(median),mini=min(median),med=median(median))
+  
+
+```
 
 
 Provide a discussion on how each major compares to the overall distribution.
@@ -120,9 +150,17 @@ You should discuss the center, spread, and potential shape only using these summ
 
 Before we continue, add the following to the end of your pipeline (you will need to pipe first) in your `major_earnings` code chunk:
 
+```{r}
+major_earnings_summary = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  arrange(desc(median))%>%
+  summarise(total = sum(median), max = max(median), mean = mean(median),std=sd(median),mini=min(median),med=median(median))%>%
+  knitr::kable()
+  
+
 ```
-knitr::kable()
-```
+
 
 Knit your document with and without this last piped code.
 What changes about the output?
@@ -139,7 +177,44 @@ Let us see how well your descriptions in the [Median Earnings by Major Category]
 Plot the distribution of the variable `median` earnings of full-time, year-round workers for each `major_category` using the *boxplot* and *jitter* geometries.
 Create a code chunk and name it `major_boxplot`.
 
+```{r}
 
+
+major_earnings_summaryss = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  #arrange(desc(median))%>%
+  ggplot() + geom_boxplot(aes(y=median, x=major_category))
+```
+
+```{r}
+major_earnings_summaryss = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  #arrange(desc(median))%>%
+  ggplot() + geom_jitter(aes(y=median, x=major_category))+ geom_jitter(aes(y=median, x=major_category))
+
+
+major_earnings_summarysss = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  #arrange(desc(median))%>%
+  ggplot() + geom_boxplot(aes(y=median, x=major_category))
+
+
+major_earnings_summaryssss = df %>%
+  select(major_category,employed_fulltime_yearround, median)%>%
+  group_by(major_category)%>%
+  #arrange(desc(median))%>%
+  ggplot() + geom_jitter(aes(y=median, x=major_category))
+
+```
+
+```{r}
+major_earnings_summaryss
+major_earnings_summarysss
+major_earnings_summaryssss
+```
 
 Provide a discussion on how your descriptions in the Median Earnings by Major Category section compares.
 
@@ -162,7 +237,21 @@ In this code chunk,
 3. Assign/create a *rank* for each summarized value (rank for `total`, rank for `sharewomen`, etc.) and provide a meaningful name to each ranked column value.
 4. Arrange the results so that `major_category` appear in alphabetical order ("A" at the top).
 
+```{r}
+rankings = df %>%
+  select(major_category,total,sharewomen,unemployment_rate,median)%>%
+  group_by(major_category)%>%
+  summarise(tot=sum(total), a=median(sharewomen),b=median(median),c=median(unemployment_rate))%>%
+  mutate(ranktot = min_rank(desc(tot)),
+         ranka = min_rank(desc(a)),
+         rankb = min_rank(desc(b)),
+         rankc = min_rank(desc(c)))%>%
+  arrange(desc(major_category))
+```
 
+```{r}
+rankings
+```
 
 Provide a discussion on how the `major_category` rankings compare.
 
